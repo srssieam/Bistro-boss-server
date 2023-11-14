@@ -50,6 +50,11 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/carts', async(req, res) =>{
+            const result = await cartCollection.find().toArray();
+            res.send(result)
+        })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
