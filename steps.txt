@@ -35,4 +35,5 @@
             res.send({ token })
         })
 
-
+* receiving token from client (while user routing "manage user" route )
+* created a verifyToken middleware, that receive data from header

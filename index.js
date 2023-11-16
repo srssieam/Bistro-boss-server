@@ -9,6 +9,12 @@ const port = process.env.PORT || 5000
 app.use(cors());
 app.use(express.json());
 
+// middleware for token verification 
+const verifyToken = (req, res, next) =>{
+    console.log('inside verifyToken middleware', req.headers);
+    next();
+}
+
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -90,8 +96,7 @@ async function run() {
         })
 
         // get user from db
-        app.get('/users', async(req, res) =>{
-            console.log(req.headers)
+        app.get('/users', verifyToken, async(req, res) =>{
             const result = await userCollection.find().toArray();
             res.send(result)
         })
