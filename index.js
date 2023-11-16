@@ -91,6 +91,7 @@ async function run() {
 
         // get user from db
         app.get('/users', async(req, res) =>{
+            console.log(req.headers)
             const result = await userCollection.find().toArray();
             res.send(result)
         })
