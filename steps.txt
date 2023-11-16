@@ -37,3 +37,7 @@
 
 * receiving token from client (while user routing "manage user" route )
 * created a verifyToken middleware, that receive data from header
+* here,
+        const token = req.headers.authorization  // ('Bearer eylsojfosjldkfjIHfl')
+* so we have to split it to get the token:-
+        const token = req.headers.authorization.split(' ')[1]  // 'eylsojfosjldkfjIHfl'
