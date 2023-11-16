@@ -7,3 +7,10 @@
 * app.put('/users/:id')
 * app.patch('/users/:id')
 * app.delete('/users/:id')
+
+
+    insert users email if user doesn't exists
+-------------------------------------------------
+* way 1) make the email unique in database
+* way 2) upsert:- if email already exists then update or if doesn't exists then insert ,
+* way 3) simple checking 
