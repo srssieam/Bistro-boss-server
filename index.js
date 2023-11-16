@@ -31,6 +31,7 @@ async function run() {
         const menuCollection = client.db("bistroDB").collection("menu");
         const reviewsCollection = client.db("bistroDB").collection("reviews");
         const cartCollection = client.db("bistroDB").collection("carts");
+        const userCollection = client.db("bistroDB").collection("users");
 
         app.get('/menu', async(req, res) =>{
             const result = await menuCollection.find().toArray();
@@ -43,13 +44,14 @@ async function run() {
             res.send(result);
         })
 
-        // carts collection
+        // store a item in carts collection
         app.post('/carts', async(req, res) =>{
             const cartItem = req.body;
             const result = await cartCollection.insertOne(cartItem)
             res.send(result)
         })
 
+        // carts of a user
         app.get('/carts', async(req, res) =>{
             const email = req.query.email;
             const query = {email: email};
@@ -57,11 +59,19 @@ async function run() {
             res.send(result)
         })
 
+        // delete item from users cart
         app.delete('/carts/:id', async(req, res) =>{
             const id = req.params.id;
             console.log(id)
             const query = { _id: new ObjectId(id) };
             const result = await cartCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // store a user info in users collection
+        app.post('/users', async(req, res) =>{
+            const user = req.body;
+            const result = await userCollection.insertOne(user);
             res.send(result);
         })
 
