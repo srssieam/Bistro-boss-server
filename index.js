@@ -52,6 +52,8 @@ async function run() {
         const reviewsCollection = client.db("bistroDB").collection("reviews");
         const cartCollection = client.db("bistroDB").collection("carts");
         const userCollection = client.db("bistroDB").collection("users");
+        const paymentCollection = client.db("bistroDB").collection("payment");
+
 
         // middleware for admin verification
         // use verifyAdmin after verifyToken
@@ -214,6 +216,14 @@ async function run() {
             res.send({
                 clientSecret: paymentIntent.client_secret // send client secret to the client side
             })
+        })
+
+        app.post('/payments', async(req, res) =>{
+            const payment = req.body; // get payment info
+            const paymentResult = await paymentCollection.insertOne(payment);
+            
+            console.log('payment info', payment);
+            res.send(paymentResult)
         })
 
 
