@@ -41,3 +41,17 @@
         const token = req.headers.authorization  // ('Bearer eylsojfosjldkfjIHfl')
 * so we have to split it to get the token:-
         const token = req.headers.authorization.split(' ')[1]  // 'eylsojfosjldkfjIHfl'
+
+
+-------------------------------------------
+    create server side payment intents
+-------------------------------------------
+* react strip js github > stripe.com/docs/stripe-js/react
+* payment > Get started > Quick start
+* select -> Javascript SDK | React | Node
+* npm install --save @stripe/react-st
+* get secret key from strip.com > Developers > API keys > Reveal test key > copy
+* .env -> STRIPE_SECRET_KEY = past
+* require stripe:-
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+* 
