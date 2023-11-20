@@ -203,15 +203,16 @@ async function run() {
         // payment intent
         app.post('/create-payment-intent', async(req, res) => {
             const { price } = req.body;  // get price from client
-            const amount = parsInt(price * 100); // convert tk into poisa
-            const paymentIntent = await stripe.paymentIntents.create({
+            const amount = parseInt(price * 100); // convert tk into poisa
+            console.log('amount inside the payment intent', amount)
+            const paymentIntent = await stripe.paymentIntents.create({  // create payment intent
                 amount: amount,
                 currency: 'usd',
                 payment_method_types: ['card']
             })
 
             res.send({
-                clientSecret: paymentIntent.client_secret
+                clientSecret: paymentIntent.client_secret // send client secret to the client side
             })
         })
 
