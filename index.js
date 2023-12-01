@@ -4,6 +4,14 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const formData = require('form-data');
+const Mailgun = require('mailgun.js');
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({
+    username: 'api',
+    key: process.env.MAIL_GUN_API_KEY,
+});
+
 const port = process.env.PORT || 5000
 
 // middleware
@@ -203,7 +211,7 @@ async function run() {
         })
 
         // payment intent
-        app.post('/create-payment-intent', async(req, res) => {
+        app.post('/create-payment-intent', async (req, res) => {
             const { price } = req.body;  // get price from client
             const amount = parseInt(price * 100); // convert tk into poisa
             console.log('amount inside the payment intent', amount)
@@ -218,31 +226,51 @@ async function run() {
             })
         })
 
-        app.post('/payments', async(req, res) =>{
+        app.post('/payments', async (req, res) => {
             const payment = req.body; // get payment info
             const paymentResult = await paymentCollection.insertOne(payment);
-            
+
             console.log('payment info', payment);
             // carefully delete each item from the cart
-            const query = { _id: {
-                $in: payment.cartIds.map(id => new ObjectId(id))
-            }};
+            const query = {
+                _id: {
+                    $in: payment.cartIds.map(id => new ObjectId(id))
+                }
+            };
             const deletedResult = await cartCollection.deleteMany(query);
-            res.send({paymentResult, deletedResult})
+
+            // send user email about payment confirmation
+            mg.messages
+                .create(process.env.MAIL_SENDING_DOMAIN, {
+                    from: "Mailgun Sandbox <postmaster@sandbox2cc720fe23754f0185e09ab2fb26e827.mailgun.org>",
+                    to: ["srssieam@gmail.com"],
+                    subject: "Bistro boss order confirm",
+                    text: "Testing some Mailgun awesomness!",
+                    html: `
+                    <div>
+                        <h2>Thank you for your order</h2>
+                        <h4>Your Transaction id: <strong>${payment.transactionId}</strong></h4>
+                    </div>
+                    `
+                })
+                .then(msg => console.log(msg)) // logs response data
+                .catch(err => console.log(err)); // logs any error`;
+
+            res.send({ paymentResult, deletedResult })
         })
 
         // get all payment data of a single user
-        app.get('/payments/:email', verifyToken, async(req, res)=> {
+        app.get('/payments/:email', verifyToken, async (req, res) => {
             const query = { email: req.params.email }
-            if(req.params.email !== req.decoded.email){
-                return res.status(403).send({message: 'forbidden access'});
+            if (req.params.email !== req.decoded.email) {
+                return res.status(403).send({ message: 'forbidden access' });
             }
-            const result = await paymentCollection.find(query).sort( { date : -1} ).toArray(); // sort payment info in descending order
+            const result = await paymentCollection.find(query).sort({ date: -1 }).toArray(); // sort payment info in descending order
             res.send(result);
         })
 
         // stats or analytics
-        app.get('/admin-stats', verifyToken, verifyAdmin, async(req, res) => {
+        app.get('/admin-stats', verifyToken, verifyAdmin, async (req, res) => {
             const users = await userCollection.estimatedDocumentCount();
             const menuItems = await menuCollection.estimatedDocumentCount();
             const orders = await paymentCollection.estimatedDocumentCount();
@@ -261,13 +289,13 @@ async function run() {
                     }
                 }
             ]).toArray();
-            const revenue = result.length > 0 ? result[0].totalRevenue : 0; 
+            const revenue = result.length > 0 ? result[0].totalRevenue : 0;
 
-            res.send({users, menuItems, orders, revenue});
+            res.send({ users, menuItems, orders, revenue });
         })
 
         // order status using aggregate pipeline
-        app.get('/order-stats', verifyToken, verifyAdmin,async(req, res) => {
+        app.get('/order-stats', verifyToken, verifyAdmin, async (req, res) => {
             const result = await paymentCollection.aggregate([
                 {
                     $unwind: '$menuItemIds',
@@ -286,8 +314,8 @@ async function run() {
                 {
                     $group: {
                         _id: '$menuItems.category',
-                        quantity: {$sum: 1},
-                        revenue: {$sum: '$menuItems.price'}
+                        quantity: { $sum: 1 },
+                        revenue: { $sum: '$menuItems.price' }
                     }
                 },
                 {
