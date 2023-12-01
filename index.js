@@ -250,6 +250,7 @@ async function run() {
                     <div>
                         <h2>Thank you for your order</h2>
                         <h4>Your Transaction id: <strong>${payment.transactionId}</strong></h4>
+                        <h4>Enjoy the food</h4>
                     </div>
                     `
                 })
